@@ -1,79 +1,91 @@
-# 📱 LINE OA Expense Tracker Web App (AI-Powered)
-
-แอปพลิเคชันบันทึกรายรับ-รายจ่ายผ่าน **LINE Official Account** โดยใช้ **Google Gemini AI** ในการวิเคราะห์ข้อความภาษาไทย และเปิดดูรายงานสรุปสถิติผ่านหน้า **LIFF Dashboard** สวยงามทันสมัย รองรับการ Deploy บน **Vercel**
-
----
-
-## 🌟 จุดเด่นของระบบ (Key Features)
-
-1. **บันทึกผ่านการแชทภาษาไทยธรรมชาติ (Gemini AI)**:
-   - ผู้ใช้เพียงพิมพ์บอกบอท เช่น *"ข้าวกะเพราหมูกรอบ 65 บาท"*, *"กาแฟเย็น 75"*, *"เติมน้ำมัน 800"*, *"เงินเดือนออก 35,000"*
-   - AI สกัด `type` (INCOME / EXPENSE), `amount`, `category`, `note` ให้อัตโนมัติด้วย Structured Output Schema
-2. **ระบบตอบกลับ LINE Webhook ปลอดภัย & มาตรฐาน**:
-   - ตรวจสอบ `x-line-signature` ด้วย HMAC-SHA256
-   - ตอบกลับ 200 OK รวดเร็วป้องกัน LINE Retry Loop
-   - ข้อความยืนยันพร้อมสรุปข้อมูลและลิงก์เปิด Dashboard
-3. **LIFF Dashboard (Frontend)**:
-   - เชื่อมต่อ `@line/liff` ดึง Profile ผู้ใช้ (Avatar, ชื่อ)
-   - สรุปยอดรายรับ, รายจ่าย, ยอดเงินคงเหลือสุทธิ และสัดส่วนการออมประจำเดือน
-   - กราฟโดนัทจำแนกหมวดหมู่รายจ่าย (Recharts Pie Chart)
-   - กราฟแท่งเปรียบเทียบกระแสเงินสดรายวัน (Recharts Bar Chart)
-   - ตารางรายการธุรกรรมล่าสุด ค้นหา กรองประเภท ลบรายการ และปุ่มเพิ่มรายการแบบ Manual
-4. **โหมดจำลอง (Dev Preview Mode)**:
-   - รองรับการทดสอบบน Desktop Browser ก่อนเชื่อมต่อ LINE จริง
+# 📊 LINE OA Expense Tracker (AI-Powered)
+> **ระบบบันทึกและวิเคราะห์รายรับ-รายจ่ายอัจฉริยะผ่าน LINE Official Account และ LIFF Dashboard**
 
 ---
 
-## 🛠 Tech Stack
-
-- **Framework:** [Next.js](https://nextjs.org/) (App Router, TypeScript)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/), Lucide Icons
-- **Charts:** [Recharts](https://recharts.org/)
-- **Database & ORM:** [Supabase](https://supabase.com/) (PostgreSQL) + [Prisma ORM](https://www.prisma.io/)
-- **AI Service:** [Google Gemini API](https://ai.google.dev/) (`@google/generative-ai`)
-- **LINE Integration:** LINE Messaging API (`@line/bot-sdk`) & LINE LIFF (`@line/liff`)
-- **Deployment Target:** Vercel
+## 📌 1. ที่มาและวัตถุประสงค์ (Problem & Solution)
+- **ปัญหา (Pain Point):** การบันทึกรายรับ-รายจ่ายแบบเดิมมีความยุ่งยาก ผู้ใช้ต้องดาวน์โหลดแอปพลิเคชันเฉพาะ จำแนกหมวดหมู่ และกรอกฟอร์มหลายขั้นตอน ทำให้คนส่วนใหญ่หมดความอดทนและเลิกบันทึกหลังจากเริ่มได้ไม่กี่วัน
+- **แนวทางแก้ไข (Solution):** พัฒนาระบบที่ผสานเข้ากับชีวิตประจำวันผ่าน **LINE** ที่ทุกคนใช้อยู่แล้ว นำ **Google Gemini AI** มาช่วยวิเคราะห์ภาษาไทยธรรมชาติ เพียงพิมพ์แชทบอกบอท เช่น *"ข้าวกะเพราหมูกรอบ 65 บาท"* ระบบจะสกัดข้อมูล บันทึก และแสดงผลเป็นสถิติสรุปบน **LIFF Dashboard** ให้อัตโนมัติทันที
 
 ---
 
-## 📁 โครงสร้างโปรเจกต์ (Project Structure)
+## 🛠️ 2. โครงสร้างเทคโนโลยี (Tech Stack)
 
-```text
-line-expense-tracker/
-├── app/
-│   ├── api/
-│   │   ├── transactions/
-│   │   │   └── route.ts          # API จัดการข้อมูลธุรกรรม (GET/POST/DELETE สำหรับ LIFF)
-│   │   └── webhook/
-│   │       └── route.ts          # LINE Messaging API Webhook
-│   ├── dashboard/
-│   │   └── page.tsx              # หน้าจอ LIFF Dashboard สำหรับผู้ใช้
-│   ├── globals.css               # สไตล์ Tailwind และ Safe-area สำหรับมือถือ
-│   ├── layout.tsx                # Next.js Root Layout
-│   └── page.tsx                  # หน้าแรก Landing Page แนะนำระบบ
-├── components/
-│   └── dashboard/
-│       ├── AddTransactionModal.tsx # Modal บันทึกรายการแบบด่วน
-│       ├── ExpenseChart.tsx        # กราฟ Recharts (Pie & Bar)
-│       ├── Header.tsx              # เมนูส่วนหัว Profile & Month Selector
-│       ├── SummaryCards.tsx        # การ์ดสรุปยอดรายรับ รายจ่าย คงเหลือ
-│       └── TransactionList.tsx     # รายการธุรกรรมพร้อมระบบกรองและค้นหา
-├── hooks/
-│   └── useLiff.ts                # Hook จัดการ LIFF Init, Auth & Dev Preview
-├── lib/
-│   ├── gemini.ts                 # ฟังก์ชันสกัดข้อมูลด้วย Gemini AI + Fallback Regex
-│   ├── line.ts                   # Helper ตรวจสอบ Signature และส่งข้อความ LINE
-│   ├── prisma.ts                 # Prisma Client Singleton
-│   └── utils.ts                  # เครื่องมือจัดฟอร์แมตเงินและวันที่ไทย
-├── prisma/
-│   └── schema.prisma             # โครงสร้างฐานข้อมูล User, Category, Transaction
-├── .env.example                  # ตัวอย่าง Environment Variables
-└── package.json
+| ส่วนการทำงาน | เทคโนโลยีที่เลือกใช้ | หน้าที่หลัก |
+| :--- | :--- | :--- |
+| **Frontend & UI** | **Next.js (App Router)** + **Tailwind CSS** | หน้าจอ LIFF Dashboard แสดงผลสถิติ กราฟ และจัดการรายการ |
+| **Data Visualization** | **Recharts** | กราฟโดนัท (หมวดหมู่ค่าใช้จ่าย) และกราฟแท่ง (กระแสเงินสดรายวัน) |
+| **AI / NLP** | **Google Gemini API** (`gemini-1.5-flash`) | วิเคราะห์ข้อความแชทภาษาไทยและสกัดออกมาเป็น JSON Structured Output |
+| **Database & ORM** | **Supabase (PostgreSQL)** + **Prisma ORM** | จัดเก็บข้อมูล User, Category และ Transaction อย่างรวดเร็วและปลอดภัย |
+| **LINE Integration** | **LINE Messaging API** + **LINE LIFF SDK** | รับ-ส่งข้อความแชท และยืนยันตัวตนผู้ใช้ในหน้า Dashboard ผ่าน In-App Browser |
+| **Cloud Hosting** | **Vercel** | แพลตฟอร์ม Serverless รองรับ HTTPS มาตรฐาน และ CI/CD Deployment |
+
+---
+
+## 🔄 3. สถาปัตยกรรมการทำงาน (System Architecture Flow)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 ผู้ใช้งาน (LINE App)
+    participant LINE as 📱 LINE Platform
+    participant Vercel as ⚡ Next.js API (Vercel)
+    participant Gemini as 🧠 Google Gemini AI
+    participant DB as 🗄️ Supabase (PostgreSQL)
+
+    %% Flow 1: Chat Recording
+    Note over User, DB: ส่วนที่ 1: การบันทึกผ่านแชท (Chat to Record)
+    User->>LINE: พิมพ์แชท เช่น "ข้าวกะเพราหมูกรอบ 65 บาท"
+    LINE->>Vercel: ยิง Webhook (POST /api/webhook พร้อม Signature)
+    Vercel->>Vercel: ตรวจสอบความปลอดภัย (HMAC-SHA256 Signature)
+    Vercel->>Gemini: ส่งข้อความไปวิเคราะห์ (Thai NLP Structured Prompt)
+    Gemini-->>Vercel: ส่ง JSON กลับมา {type: EXPENSE, amount: 65, category: อาหาร, note: ข้าวกะเพราหมูกรอบ}
+    Vercel->>DB: Upsert User และ Insert Transaction ลงฐานข้อมูล
+    Vercel->>LINE: สั่ง Reply Message ส่งข้อความยืนยันพร้อมลิงก์ LIFF
+    LINE-->>User: แสดงการ์ดยืนยันการบันทึกสำเร็จในแชท
+
+    %% Flow 2: Dashboard Visualization
+    Note over User, DB: ส่วนที่ 2: การเปิดดู Dashboard (LIFF Dashboard)
+    User->>LINE: กดปุ่มเปิดดู Dashboard (https://liff.line.me/...)
+    LINE->>Vercel: เปิดหน้าเว็บ Next.js (/dashboard)
+    Vercel->>LINE: LIFF SDK ดึง Profile ผู้ใช้ (User ID, ชื่อ, รูปโปรไฟล์)
+    Vercel->>DB: ยิง Query ข้อมูลธุรกรรมประจำเดือนของผู้ใช้คนนั้น
+    DB-->>Vercel: ส่งข้อมูลตัวเลข, สัดส่วนหมวดหมู่, ประวัติรายการ
+    Vercel-->>User: เรนเดอร์การ์ดสรุปยอด กราฟ Recharts และตารางธุรกรรม
 ```
 
 ---
 
-## 🚀 วิธีติดตั้งและเริ่มต้นใช้งาน (Getting Started)
+## ⚙️ 4. การเชื่อมต่อของแต่ละส่วน (Component Details)
+
+### 1) LINE Messaging API ⟷ Next.js Webhook (`/api/webhook`)
+- **ความปลอดภัย:** ตรวจสอบความถูกต้องของคำขอผ่าน Header `x-line-signature` เทียบกับ `LINE_CHANNEL_SECRET` ด้วยอัลกอริทึม HMAC-SHA256 ป้องกันการปลอมแปลง
+- **Multi-tenant Isolation:** ดึง `lineUserId` จาก Event Payload เพื่อแยกบัญชีผู้ใช้งานแต่ละบุคคลอย่างสมบูรณ์ ข้อมูลไม่ปะปนกัน
+
+### 2) Webhook ⟷ Google Gemini AI (`lib/gemini.ts`)
+- ส่งข้อความแชทภาษาไทยไปยัง Gemini API พร้อมกำหนด **JSON Schema (Structured Output)** บังคับฟิลด์:
+  - `type`: "INCOME" | "EXPENSE"
+  - `amount`: number
+  - `category`: string (เช่น อาหารและเครื่องดื่ม, การเดินทาง, ช้อปปิ้ง, เงินเดือน)
+  - `note`: string
+- **Fallback Regex Parser:** หาก Gemini มีปัญหาขัดข้องชั่วคราว ระบบสำรองจะตรวจจับตัวเลขและคีย์เวิร์ดภาษาไทยเพื่อบันทึกรายการได้ต่อเนื่อง
+
+### 3) ฐานข้อมูล Supabase + Prisma (`prisma/schema.prisma`)
+- **Connection Pooling:** ใช้ PgBouncer ของ Supabase (Port 6543) สำหรับ Serverless บน Vercel ป้องกัน Connection ล้น
+- **โครงสร้างตาราง:**
+  - `User`: เก็บ `lineUserId`, ชื่อ `displayName`, รูปโปรไฟล์ `pictureUrl`
+  - `Category`: เก็บหมวดหมู่ค่าใช้จ่าย
+  - `Transaction`: จัดเก็บรายการรายรับ-รายจ่าย เชื่อมโยงกับผู้ใช้ พร้อม Index ที่ `[userId, transactionDate]` ช่วยให้ Query รวดเร็ว
+
+### 4) LINE LIFF ⟷ Frontend Dashboard (`/dashboard`)
+- รันผ่าน In-App Browser ของ LINE โดยใช้ `@line/liff`
+- อ่าน Profile ผู้ใช้ (User ID, ชื่อ, รูป) จาก LINE Login โดยไม่ต้องล็อกอินซ้ำ
+- เชื่อมต่อ REST API `/api/transactions?lineUserId=...&month=YYYY-MM` เพื่อดึงข้อมูลรายเดือน คำนวณยอดสุทธิ และแสดงกราฟ Recharts
+- รองรับการกรองรายการ (Filter), ค้นหา (Search), เพิ่มรายการแบบ Manual และลบรายการ
+
+---
+
+## 🚀 5. การติดตั้งและเริ่มต้นใช้งาน (Getting Started)
 
 ### 1. ติดตั้ง Dependencies
 ```bash
@@ -81,32 +93,27 @@ npm install
 ```
 
 ### 2. ตั้งค่า Environment Variables
-คัดลอกไฟล์ `.env.example` เป็น `.env`:
-```bash
-cp .env.example .env
-```
-
-ระบุค่าคอนฟิกต่างๆ:
+สร้างไฟล์ `.env` จาก `.env.example`:
 ```env
-# 1. Supabase PostgreSQL
-DATABASE_URL="postgresql://postgres.[YOUR-PROJECT]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.[YOUR-PROJECT]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+# Supabase PostgreSQL
+DATABASE_URL="postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
 
-# 2. LINE Developers Console (Messaging API)
-LINE_CHANNEL_SECRET="your_line_channel_secret"
-LINE_CHANNEL_ACCESS_TOKEN="your_line_channel_access_token"
+# LINE Messaging API (ได้จากแท็บ Basic settings และ Messaging API)
+LINE_CHANNEL_SECRET="your_channel_secret"
+LINE_CHANNEL_ACCESS_TOKEN="your_channel_access_token"
 
-# 3. LINE Developers Console (LIFF)
-NEXT_PUBLIC_LIFF_ID="2000000000-XXXXXXXX"
+# LINE LIFF (ได้จากแท็บ LIFF ใน LINE Login Channel)
+NEXT_PUBLIC_LIFF_ID="your_liff_id"
 
-# 4. Google AI Studio (Gemini)
-GEMINI_API_KEY="AIzaSy..."
+# Google Gemini API (ได้จาก Google AI Studio)
+GEMINI_API_KEY="your_gemini_api_key"
 
-# 5. Base URL
+# App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-### 3. Sync โครงสร้างฐานข้อมูลด้วย Prisma
+### 3. Sync โครงสร้างฐานข้อมูล
 ```bash
 npx prisma db push
 ```
@@ -115,36 +122,14 @@ npx prisma db push
 ```bash
 npm run dev
 ```
-เปิดบราวเซอร์ไปที่ `http://localhost:3000`
+เปิดใช้งานที่ `http://localhost:3000` (หน้าแรก) หรือ `http://localhost:3000/dashboard` (หน้า Dashboard)
 
 ---
 
-## 📲 การเชื่อมต่อ LINE Messaging API & LIFF
+## 🌟 6. จุดเด่นของระบบ (Key Highlights)
 
-### A. ตั้งค่า LINE Webhook
-1. สมัคร/เข้าสู่ระบบ [LINE Developers Console](https://developers.line.biz/)
-2. สร้าง Channel ประเภท **Messaging API**
-3. คัดลอก **Channel secret** และ **Channel access token (long-lived)** ใส่ใน `.env`
-4. รัน Tunnel เพื่อส่ง Webhook เข้าเครื่อง Local (เช่น `ngrok http 3000`)
-5. ในแท็บ **Messaging API**:
-   - ตั้งค่า **Webhook URL**: `https://<YOUR-DOMAIN>/api/webhook`
-   - เปิดสวิตช์ **Use webhook** เป็น Enabled
-   - กดปุ่ม **Verify** เพื่อทดสอบสถานะ (ต้องขึ้น Success)
-   - ปิด **Auto-reply messages** ใน LINE Official Account Manager
-
-### B. ตั้งค่า LINE LIFF
-1. ใน LINE Developers Console สร้าง Channel หรือเพิ่ม **LIFF App**
-2. ตั้งค่า **Endpoint URL**: `https://<YOUR-DOMAIN>/dashboard`
-3. Scope: เลือก `profile` และ `openid`
-4. คัดลอก **LIFF ID** มาใส่ใน `NEXT_PUBLIC_LIFF_ID` ในไฟล์ `.env`
-5. นำลิงก์ LIFF URL (`https://liff.line.me/<LIFF_ID>`) ไปใส่ใน Rich Menu ของ LINE OA
-
----
-
-## ☁️ การ Deploy ขึ้น Vercel
-
-1. Push โค้ดขึ้น GitHub Repository
-2. Import เข้าสู่ [Vercel](https://vercel.com/)
-3. เพิ่ม Environment Variables ทั้งหมดจาก `.env` ในหน้า Project Settings
-4. Vercel จะรัน Build และ Deploy อัตโนมัติ (`prisma generate && next build`)
-5. อัปเดต Webhook URL และ LIFF Endpoint URL ใน LINE Developers Console ด้วย Production URL ของ Vercel
+1. **Zero-Friction User Experience:** ใช้งานผ่าน LINE ที่คุ้นเคย ไม่ต้องดาวน์โหลดหรือสลับแอป
+2. **AI-Driven Automation:** เข้าใจภาษาไทยธรรมชาติ เช่น *"กาแฟ 60"*, *"เงินเดือนออก 35000"*, *"เติมน้ำมัน 800"* AI แยกประเภทและหมวดหมู่ให้อัตโนมัติ
+3. **Enterprise-Grade Architecture:** พัฒนาด้วย Strict TypeScript, Next.js App Router, Tailwind CSS และ Prisma ORM
+4. **Serverless & Cost Effective:** โครงสร้างระบบทั้งหมดทำงานบน Serverless (Vercel + Supabase) สเกลได้ไม่จำกัดและประหยัดต้นทุน
+5. **High Privacy & Security:** แยกข้อมูลตาม `lineUserId` ของผู้ใช้แต่ละคน พร้อมการตรวจสอบ Signature ตามมาตรฐานความปลอดภัยของ LINE Platform
